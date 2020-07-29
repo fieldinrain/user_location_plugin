@@ -22,8 +22,7 @@ class MapsPluginLayer extends StatefulWidget {
   _MapsPluginLayerState createState() => _MapsPluginLayerState();
 }
 
-class _MapsPluginLayerState extends State<MapsPluginLayer>
-    with TickerProviderStateMixin, WidgetsBindingObserver {
+class _MapsPluginLayerState extends State<MapsPluginLayer> with TickerProviderStateMixin, WidgetsBindingObserver {
   LatLng _currentLocation;
   UserLocationMarker _locationMarker;
   EventChannel _stream = EventChannel('locationStatusStream');
@@ -42,8 +41,7 @@ class _MapsPluginLayerState extends State<MapsPluginLayer>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
-    initialStateOfupdateMapLocationOnPositionChange =
-        widget.options.updateMapLocationOnPositionChange;
+    initialStateOfupdateMapLocationOnPositionChange = widget.options.updateMapLocationOnPositionChange;
 
     setState(() {
       mapLoaded = false;
@@ -99,7 +97,12 @@ class _MapsPluginLayerState extends State<MapsPluginLayer>
       }
     }
 
-    _permissionGranted = await location.hasPermission();
+    try {
+      _permissionGranted = await location.hasPermission();
+    } catch (e) {
+      _permissionGranted = await location.requestPermission();
+    }
+
     if (_permissionGranted == PermissionStatus.denied) {
       _permissionGranted = await location.requestPermission();
       if (_permissionGranted != PermissionStatus.granted) {
@@ -138,10 +141,8 @@ class _MapsPluginLayerState extends State<MapsPluginLayer>
     printLog("OnSubscribe to location change");
     var location = Location();
     if (await location.requestService() &&
-        await location.changeSettings(
-            interval: widget.options.locationUpdateIntervalMs)) {
-      _onLocationChangedStreamSubscription =
-          location.onLocationChanged.listen((onValue) {
+        await location.changeSettings(interval: widget.options.locationUpdateIntervalMs)) {
+      _onLocationChangedStreamSubscription = location.onLocationChanged.listen((onValue) {
         _addsMarkerLocationToMarkerLocationStream(onValue);
         setState(() {
           if (onValue.latitude == null || onValue.longitude == null) {
@@ -167,8 +168,7 @@ class _MapsPluginLayerState extends State<MapsPluginLayer>
           _locationMarker = UserLocationMarker(
               height: 60.0,
               width: 60.0,
-              point:
-                  LatLng(_currentLocation.latitude, _currentLocation.longitude),
+              point: LatLng(_currentLocation.latitude, _currentLocation.longitude),
               builder: (context) {
                 return Container(
                   child: Column(
@@ -182,10 +182,7 @@ class _MapsPluginLayerState extends State<MapsPluginLayer>
                                   child: Container(
                                     child: new Transform.rotate(
                                         // This particular value seems to work
-                                        angle: (((_direction * -1) ?? 0) *
-                                                (math.pi / 180) *
-                                                -1) +
-                                            160,
+                                        angle: (((_direction * -1) ?? 0) * (math.pi / 180) * -1) + 160,
                                         child: Container(
                                           child: CustomPaint(
                                             size: Size(60.0, 60.0),
@@ -197,17 +194,13 @@ class _MapsPluginLayerState extends State<MapsPluginLayer>
                           Container(
                             height: 20.0,
                             width: 20.0,
-                            decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.blue[300].withOpacity(0.7)),
+                            decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.blue[300].withOpacity(0.7)),
                           ),
                           widget.options.markerWidget ??
                               Container(
                                 height: 10,
                                 width: 10,
-                                decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.blueAccent),
+                                decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.blueAccent),
                               ),
                         ],
                       ),
@@ -218,8 +211,7 @@ class _MapsPluginLayerState extends State<MapsPluginLayer>
 
           widget.options.markers.add(_locationMarker);
 
-          if (widget.options.updateMapLocationOnPositionChange &&
-              widget.options.mapController != null) {
+          if (widget.options.updateMapLocationOnPositionChange && widget.options.mapController != null) {
             _moveMapToCurrentLocation();
           } else if (widget.options.updateMapLocationOnPositionChange) {
             if (!widget.options.updateMapLocationOnPositionChange) {
@@ -235,8 +227,7 @@ class _MapsPluginLayerState extends State<MapsPluginLayer>
             setState(() {
               mapLoaded = true;
             });
-            animatedMapMove(_currentLocation, widget.options.defaultZoom,
-                widget.options.mapController, this);
+            animatedMapMove(_currentLocation, widget.options.defaultZoom, widget.options.mapController, this);
           }
         });
       });
@@ -245,12 +236,8 @@ class _MapsPluginLayerState extends State<MapsPluginLayer>
 
   void _moveMapToCurrentLocation({double zoom}) {
     if (_currentLocation != null) {
-      animatedMapMove(
-          LatLng(_currentLocation.latitude ?? LatLng(0, 0),
-              _currentLocation.longitude ?? LatLng(0, 0)),
-          zoom ?? widget.map.zoom ?? 15,
-          widget.options.mapController,
-          this);
+      animatedMapMove(LatLng(_currentLocation.latitude ?? LatLng(0, 0), _currentLocation.longitude ?? LatLng(0, 0)),
+          zoom ?? widget.map.zoom ?? 15, widget.options.mapController, this);
       // widget.options.mapController.move(
       //     LatLng(_currentLocation.latitude ?? LatLng(0, 0),
       //         _currentLocation.longitude ?? LatLng(0, 0)),
@@ -277,8 +264,7 @@ class _MapsPluginLayerState extends State<MapsPluginLayer>
   }
 
   void _handleCompassDirection() {
-    _compassStreamSubscription =
-        FlutterCompass.events.listen((double direction) {
+    _compassStreamSubscription = FlutterCompass.events.listen((double direction) {
       setState(() {
         _direction = direction;
       });
@@ -290,14 +276,12 @@ class _MapsPluginLayerState extends State<MapsPluginLayer>
     if (widget.options.onLocationUpdate == null) {
       printLog("Stream not provided");
     } else {
-      widget.options
-          .onLocationUpdate(LatLng(onValue.latitude, onValue.longitude));
+      widget.options.onLocationUpdate(LatLng(onValue.latitude, onValue.longitude));
     }
   }
 
   Widget build(BuildContext context) {
-    if (_locationMarker != null &&
-        !widget.options.markers.contains(_locationMarker)) {
+    if (_locationMarker != null && !widget.options.markers.contains(_locationMarker)) {
       widget.options.markers.add(_locationMarker);
     }
 
@@ -319,16 +303,12 @@ class _MapsPluginLayerState extends State<MapsPluginLayer>
                   _moveMapToCurrentLocation(zoom: widget.options.defaultZoom);
                   widget.options.onTapFAB();
                 },
-                child: widget.options
-                            .moveToCurrentLocationFloatingActionButton ==
-                        null
+                child: widget.options.moveToCurrentLocationFloatingActionButton == null
                     ? Container(
                         decoration: BoxDecoration(
                             color: Colors.blueAccent,
                             borderRadius: BorderRadius.circular(20.0),
-                            boxShadow: [
-                              BoxShadow(color: Colors.grey, blurRadius: 10.0)
-                            ]),
+                            boxShadow: [BoxShadow(color: Colors.grey, blurRadius: 10.0)]),
                         child: Icon(
                           Icons.my_location,
                           color: Colors.white,
@@ -339,28 +319,22 @@ class _MapsPluginLayerState extends State<MapsPluginLayer>
         : Container();
   }
 
-  void animatedMapMove(
-      LatLng destLocation, double destZoom, _mapController, vsync) {
+  void animatedMapMove(LatLng destLocation, double destZoom, _mapController, vsync) {
     // Create some tweens. These serve to split up the transition from one location to another.
     // In our case, we want to split the transition be<tween> our current map center and the destination.
-    final _latTween = Tween<double>(
-        begin: _mapController.center.latitude, end: destLocation.latitude);
-    final _lngTween = Tween<double>(
-        begin: _mapController.center.longitude, end: destLocation.longitude);
+    final _latTween = Tween<double>(begin: _mapController.center.latitude, end: destLocation.latitude);
+    final _lngTween = Tween<double>(begin: _mapController.center.longitude, end: destLocation.longitude);
     final _zoomTween = Tween<double>(begin: _mapController.zoom, end: destZoom);
 
     // Create a animation controller that has a duration and a TickerProvider.
-    var controller = AnimationController(
-        duration: const Duration(milliseconds: 500), vsync: vsync);
+    var controller = AnimationController(duration: const Duration(milliseconds: 500), vsync: vsync);
     // The animation determines what path the animation will take. You can try different Curves values, although I found
     // fastOutSlowIn to be my favorite.
-    Animation<double> animation =
-        CurvedAnimation(parent: controller, curve: Curves.fastOutSlowIn);
+    Animation<double> animation = CurvedAnimation(parent: controller, curve: Curves.fastOutSlowIn);
 
     controller.addListener(() {
       _mapController.move(
-          LatLng(_latTween.evaluate(animation), _lngTween.evaluate(animation)),
-          _zoomTween.evaluate(animation));
+          LatLng(_latTween.evaluate(animation), _lngTween.evaluate(animation)), _zoomTween.evaluate(animation));
     });
 
     animation.addStatusListener((status) {
@@ -386,10 +360,9 @@ class _MapsPluginLayerState extends State<MapsPluginLayer>
 
   void forceMapUpdate() {
     var zoom = widget.options.mapController.zoom;
-    widget.options.mapController.move(widget.options.mapController.center,
-        widget.options.mapController.zoom + 0.000001);
     widget.options.mapController
-        .move(widget.options.mapController.center, zoom);
+        .move(widget.options.mapController.center, widget.options.mapController.zoom + 0.000001);
+    widget.options.mapController.move(widget.options.mapController.center, zoom);
   }
 }
 
